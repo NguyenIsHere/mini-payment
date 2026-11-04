@@ -1,0 +1,6 @@
+{
+  "sourceAccountNumber": "ACC001",
+  "targetAccountNumber": "ACC002",
+  "amount": 1000.00,
+  "idempotencyKey": "ab-docker-test-01"
+}
