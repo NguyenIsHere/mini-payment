@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TransactionSearchRepository extends ElasticsearchRepository<TransactionDocument, String> {
-    // Có thể viết thêm custom query search tại đây nếu cần sau này
 }

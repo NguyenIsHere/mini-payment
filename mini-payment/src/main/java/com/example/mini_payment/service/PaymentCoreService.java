@@ -52,30 +52,25 @@ public class PaymentCoreService {
         String firstAccNumber = isSourceFirst ? request.getSourceAccountNumber() : request.getTargetAccountNumber();
         String secondAccNumber = isSourceFirst ? request.getTargetAccountNumber() : request.getSourceAccountNumber();
 
-        // Thực hiện lock theo đúng thứ tự cố định
         Account firstAccount = accountRepository.findWithLockByAccountNumber(firstAccNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản: " + firstAccNumber));
 
         Account secondAccount = accountRepository.findWithLockByAccountNumber(secondAccNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản: " + secondAccNumber));
 
-        // Gán lại đúng vai trò tài khoản Nguồn / Đích
         Account sourceAccount = isSourceFirst ? firstAccount : secondAccount;
         Account targetAccount = isSourceFirst ? secondAccount : firstAccount;
 
-        // Kiểm tra số dư
         if (sourceAccount.getBalance().compareTo(request.getAmount()) < 0) {
             throw new InsufficientBalanceException("Số dư tài khoản nguồn không đủ");
         }
 
-        // Trừ/Cộng tiền
         sourceAccount.setBalance(sourceAccount.getBalance().subtract(request.getAmount()));
         targetAccount.setBalance(targetAccount.getBalance().add(request.getAmount()));
 
         accountRepository.save(sourceAccount);
         accountRepository.save(targetAccount);
 
-        // Lưu Transaction
         Transaction transaction = Transaction.builder()
                 .transactionCode(UUID.randomUUID().toString())
                 .sourceAccountNumber(request.getSourceAccountNumber())
@@ -88,7 +83,7 @@ public class PaymentCoreService {
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         try {
-            // 6. [OUTBOX PATTERN] Lưu vào bảng Outbox_events chung 1 Transaction
+            // OUTBOX PATTERN cho đồng bộ lịch sử data transaction sang elasticsearch
             OutboxEvent outboxEvent = OutboxEvent.builder()
                     .payload(objectMapper.writeValueAsString(savedTransaction))
                     .status(OutboxStatus.PENDING)

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -23,52 +24,56 @@ public class OutboxProcessorJob {
     private final TransactionSearchRepository transactionSearchRepository;
     private final ObjectMapper objectMapper;
 
-    // Chạy ngầm định kỳ mỗi 60 giây (60000 ms)
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 10000)
     public void processPendingOutboxEvents() {
-        List<OutboxEvent> pendingEvents = outboxEventRepository.findByStatus(OutboxStatus.PENDING);
-        
+        List<OutboxEvent> pendingEvents = outboxEventRepository.findAndLockPendingEvents(50);
+
         if (pendingEvents.isEmpty()) {
-            return; // Không có việc thì nghỉ
+            return;
         }
-        
-        log.info("[OUTBOX JOB] Tìm thấy {} events cần đồng bộ sang Elasticsearch", pendingEvents.size());
+
+        log.info("[OUTBOX JOB] Tìm thấy và khóa thành công {} events chờ đồng bộ", pendingEvents.size());
 
         for (OutboxEvent event : pendingEvents) {
-            try {
-                // 1. Giải mã Payload từ JSON về lại Object Transaction
-                Transaction tx = objectMapper.readValue(event.getPayload(), Transaction.class);
+            processSingleEvent(event);
+        }
+    }
 
-                // 2. Map sang Document của Elasticsearch
-                TransactionDocument doc = TransactionDocument.builder()
-                        .id(String.valueOf(tx.getId()))
-                        .transactionCode(tx.getTransactionCode())
-                        .sourceAccountNumber(tx.getSourceAccountNumber())
-                        .targetAccountNumber(tx.getTargetAccountNumber())
-                        .amount(tx.getAmount())
-                        .status(tx.getStatus().name())
-                        .createdAt(tx.getCreatedAt())
-                        .build();
+    @Transactional
+    public void processSingleEvent(OutboxEvent event) {
+        try {
+            event.setStatus(OutboxStatus.PROCESSING);
+            outboxEventRepository.save(event);
 
-                // 3. Đẩy sang ES (I/O Network diễn ra ở đây, hoàn toàn tách biệt với DB Transaction)
-                transactionSearchRepository.save(doc);
+            Transaction tx = objectMapper.readValue(event.getPayload(), Transaction.class);
 
-                // 4. Cập nhật thành công
-                event.setStatus(OutboxStatus.DONE);
-                outboxEventRepository.save(event);
-                log.info("[OUTBOX JOB] Đồng bộ thành công giao dịch {}", tx.getTransactionCode());
+            TransactionDocument doc = TransactionDocument.builder()
+                    .id(String.valueOf(tx.getId()))
+                    .transactionCode(tx.getTransactionCode())
+                    .sourceAccountNumber(tx.getSourceAccountNumber())
+                    .targetAccountNumber(tx.getTargetAccountNumber())
+                    .amount(tx.getAmount())
+                    .status(tx.getStatus().name())
+                    .createdAt(tx.getCreatedAt())
+                    .build();
 
-            } catch (Exception e) {
-                // 5. Xử lý kịch bản lỗi mạng, sập Elasticsearch
-                event.setRetryCount(event.getRetryCount() + 1);
-                log.error("[OUTBOX JOB] Đồng bộ lỗi event ID {}. Lần thử: {}", event.getId(), event.getRetryCount(), e);
+            transactionSearchRepository.save(doc);
 
-                if (event.getRetryCount() >= 5) {
-                    log.error("[OUTBOX JOB] Event ID {} đã vượt quá 5 lần retry. Đánh dấu CẦN CAN THIỆP THỦ CÔNG", event.getId());
-                    event.setStatus(OutboxStatus.FAILED_NEEDS_MANUAL_FIX);
-                }
-                outboxEventRepository.save(event);
+            event.setStatus(OutboxStatus.DONE);
+            outboxEventRepository.save(event);
+            log.info("[OUTBOX JOB] Đồng bộ thành công giao dịch {}", tx.getTransactionCode());
+
+        } catch (Exception e) {
+            event.setRetryCount(event.getRetryCount() + 1);
+            log.error("[OUTBOX JOB] Lỗi đồng bộ event ID {}. Lần thử thứ: {}", event.getId(), event.getRetryCount(), e);
+
+            if (event.getRetryCount() >= 5) {
+                log.error("[OUTBOX JOB] Event ID {} vượt quá 5 lần retry. Đánh dấu FAILED_NEEDS_MANUAL_FIX", event.getId());
+                event.setStatus(OutboxStatus.FAILED_NEEDS_MANUAL_FIX);
+            } else {
+                event.setStatus(OutboxStatus.PENDING);
             }
+            outboxEventRepository.save(event);
         }
     }
 }

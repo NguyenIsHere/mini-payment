@@ -10,13 +10,13 @@ import java.util.concurrent.Executor;
 @Configuration
 @EnableAsync
 public class AsyncConfig {
-
+    // Thread Pool chuyên xử lý các request thanh toán và event bất đồng bộ nhẹ
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);        // 5 luồng chạy thường trực
-        executor.setMaxPoolSize(10);        // Tối đa 10 luồng khi quá tải
-        executor.setQueueCapacity(100);     // Hàng chờ chứa 100 task
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("PaymentAsyncThread-");
         executor.initialize();
         return executor;
