@@ -3,7 +3,6 @@ package com.example.mini_payment.service;
 import com.example.mini_payment.dto.TransferRequestDTO;
 import com.example.mini_payment.entity.Transaction;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentFacade {
@@ -28,8 +26,7 @@ public class PaymentFacade {
             Boolean isNew = redisTemplate.opsForValue().setIfAbsent(redisKey, "PROCESSING", Duration.ofMinutes(5));
 
             if (Boolean.FALSE.equals(isNew)) {
-                log.warn("Phát hiện request trùng lặp qua IdempotencyKey: {}", idempotencyKey);
-                throw new IllegalArgumentException("Giao dịch đang được xử lý hoặc đã hoàn thành.");
+                throw new IllegalArgumentException("Duplicate request: idempotencyKey=" + idempotencyKey);
             }
         }
 
@@ -40,28 +37,22 @@ public class PaymentFacade {
         try {
             isLocked = redisLock.tryLock(3, 10, TimeUnit.SECONDS);
             if (!isLocked) {
-                log.warn("Không thể lấy được Redis Lock cho tài khoản {} do đang có giao dịch khác xử lý", request.getSourceAccountNumber());
-                throw new IllegalStateException("Hệ thống đang bận xử lý giao dịch cho tài khoản này, vui lòng thử lại sau.");
+                throw new IllegalStateException("Account is busy with another transaction: " + request.getSourceAccountNumber());
             }
-
-            log.info("Đã lấy được Redis Distributed Lock cho tài khoản: {}", request.getSourceAccountNumber());
 
             Transaction tx = paymentCoreService.transferMoneyInDB(request);
 
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                String redisKey = "IDEMPOTENCY:" + idempotencyKey;
-                redisTemplate.opsForValue().set(redisKey, "SUCCESS", Duration.ofHours(24));
+                redisTemplate.opsForValue().set("IDEMPOTENCY:" + idempotencyKey, "SUCCESS", Duration.ofHours(24));
             }
 
             return tx;
-
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Luồng thực thi bị gián đoạn khi xin khóa Redis", e);
+            throw new RuntimeException("Interrupted while acquiring lock for account: " + request.getSourceAccountNumber(), e);
         } finally {
             if (isLocked && redisLock.isHeldByCurrentThread()) {
                 redisLock.unlock();
-                log.info("Đã giải phóng Redis Distributed Lock cho tài khoản: {}", request.getSourceAccountNumber());
             }
         }
     }

@@ -18,9 +18,8 @@ public class OutboxEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Lưu toàn bộ data của Transaction dưới dạng chuỗi JSON
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String payload; 
+    private String payload;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

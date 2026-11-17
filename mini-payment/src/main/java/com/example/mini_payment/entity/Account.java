@@ -2,6 +2,7 @@ package com.example.mini_payment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -27,8 +28,6 @@ public class Account {
     @Column(nullable = false)
     private String ownerName;
 
-    // Chống Race Condition: Hibernate tự tăng số này khi update.
-    // Nếu 2 luồng cùng update 1 dòng, luồng 2 sẽ bị văng OptimisticLockException
     @Version
     private Long version;
 

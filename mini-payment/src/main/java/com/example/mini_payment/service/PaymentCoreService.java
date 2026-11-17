@@ -41,28 +41,24 @@ public class PaymentCoreService {
     )
     @Transactional(rollbackFor = Exception.class)
     public Transaction transferMoneyInDB(TransferRequestDTO request) {
-        log.info("Bắt đầu xử lý chuyển tiền trong DB từ {} sang {}", request.getSourceAccountNumber(), request.getTargetAccountNumber());
-
         if (request.getSourceAccountNumber().equals(request.getTargetAccountNumber())) {
-            throw new IllegalArgumentException("Tài khoản nguồn và tài khoản đích không được trùng nhau");
+            throw new IllegalArgumentException("Source and target accounts must be different.");
         }
-
-        // GIẢI PHÁP NGHẼN DEADLOCK: Sắp xếp thứ tự Lock theo bảng chữ cái số tài khoản
+        
         boolean isSourceFirst = request.getSourceAccountNumber().compareTo(request.getTargetAccountNumber()) < 0;
-        String firstAccNumber = isSourceFirst ? request.getSourceAccountNumber() : request.getTargetAccountNumber();
-        String secondAccNumber = isSourceFirst ? request.getTargetAccountNumber() : request.getSourceAccountNumber();
+        String firstAccountNumber = isSourceFirst ? request.getSourceAccountNumber() : request.getTargetAccountNumber();
+        String secondAccountNumber = isSourceFirst ? request.getTargetAccountNumber() : request.getSourceAccountNumber();
 
-        Account firstAccount = accountRepository.findWithLockByAccountNumber(firstAccNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản: " + firstAccNumber));
-
-        Account secondAccount = accountRepository.findWithLockByAccountNumber(secondAccNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản: " + secondAccNumber));
+        Account firstAccount = accountRepository.findWithLockByAccountNumber(firstAccountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + firstAccountNumber));
+        Account secondAccount = accountRepository.findWithLockByAccountNumber(secondAccountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + secondAccountNumber));
 
         Account sourceAccount = isSourceFirst ? firstAccount : secondAccount;
         Account targetAccount = isSourceFirst ? secondAccount : firstAccount;
 
         if (sourceAccount.getBalance().compareTo(request.getAmount()) < 0) {
-            throw new InsufficientBalanceException("Số dư tài khoản nguồn không đủ");
+            throw new InsufficientBalanceException("Insufficient balance in source account.");
         }
 
         sourceAccount.setBalance(sourceAccount.getBalance().subtract(request.getAmount()));
@@ -71,38 +67,41 @@ public class PaymentCoreService {
         accountRepository.save(sourceAccount);
         accountRepository.save(targetAccount);
 
-        Transaction transaction = Transaction.builder()
+        Transaction savedTransaction = transactionRepository.save(Transaction.builder()
                 .transactionCode(UUID.randomUUID().toString())
                 .sourceAccountNumber(request.getSourceAccountNumber())
                 .targetAccountNumber(request.getTargetAccountNumber())
                 .amount(request.getAmount())
                 .status(TransactionStatus.SUCCESS)
                 .idempotencyKey(request.getIdempotencyKey())
-                .build();
+                .build());
 
-        Transaction savedTransaction = transactionRepository.save(transaction);
+        outboxEventRepository.save(OutboxEvent.builder()
+                .payload(serializeTransaction(savedTransaction))
+                .status(OutboxStatus.PENDING)
+                .retryCount(0)
+                .build());
 
-        try {
-            // OUTBOX PATTERN cho đồng bộ lịch sử data transaction sang elasticsearch
-            OutboxEvent outboxEvent = OutboxEvent.builder()
-                    .payload(objectMapper.writeValueAsString(savedTransaction))
-                    .status(OutboxStatus.PENDING)
-                    .retryCount(0)
-                    .build();
-            outboxEventRepository.save(outboxEvent);
-
-            log.info("Đã ghi event vào bảng Outbox cho giao dịch: {}", savedTransaction.getTransactionCode());
-        } catch (Exception e) {
-            log.error("Lỗi khi parse JSON cho Outbox Event", e);
-            throw new RuntimeException("Lỗi hệ thống khi ghi nhận Outbox");
-        }
+        log.info("Transfer completed: txCode={}, from={}, to={}, amount={}",
+                savedTransaction.getTransactionCode(),
+                request.getSourceAccountNumber(),
+                request.getTargetAccountNumber(),
+                request.getAmount());
 
         return savedTransaction;
     }
 
     @Recover
     public Transaction recover(Exception e, TransferRequestDTO request) {
-        log.error("Hệ thống quá tải Lock sau nhiều lần Retry. DB Transaction Rollback.", e);
-        throw new IllegalStateException("Hệ thống đang nghẽn mạch cục bộ, vui lòng thực hiện lại giao dịch sau giây lát.");
+        throw new IllegalStateException("DB lock contention persisted after retries for sourceAccount="
+                + request.getSourceAccountNumber(), e);
+    }
+
+    private String serializeTransaction(Transaction transaction) {
+        try {
+            return objectMapper.writeValueAsString(transaction);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to serialize transaction: " + transaction.getTransactionCode(), e);
+        }
     }
 }

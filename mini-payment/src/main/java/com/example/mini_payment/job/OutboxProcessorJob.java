@@ -10,9 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -20,59 +21,53 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OutboxProcessorJob {
 
+    private static final int BATCH_SIZE = 50;
+    private static final int MAX_RETRIES = 5;
+
     private final OutboxEventRepository outboxEventRepository;
     private final TransactionSearchRepository transactionSearchRepository;
     private final ObjectMapper objectMapper;
+    private final TransactionTemplate transactionTemplate;
 
     @Scheduled(fixedDelay = 10000)
     public void processPendingOutboxEvents() {
-        List<OutboxEvent> pendingEvents = outboxEventRepository.findAndLockPendingEvents(50);
-
-        if (pendingEvents.isEmpty()) {
-            return;
-        }
-
-        log.info("[OUTBOX JOB] Tìm thấy và khóa thành công {} events chờ đồng bộ", pendingEvents.size());
-
-        for (OutboxEvent event : pendingEvents) {
-            processSingleEvent(event);
+        List<OutboxEvent> claimedEvents = claimBatch();
+        for (OutboxEvent event : claimedEvents) {
+            syncSingleEvent(event);
         }
     }
 
-    @Transactional
-    public void processSingleEvent(OutboxEvent event) {
+    private List<OutboxEvent> claimBatch() {
+        List<OutboxEvent> claimed = transactionTemplate.execute(status -> {
+            List<OutboxEvent> events = outboxEventRepository.findAndLockPendingEvents(BATCH_SIZE);
+            if (events.isEmpty()) {
+                return Collections.emptyList();
+            }
+            events.forEach(event -> event.setStatus(OutboxStatus.PROCESSING));
+            return outboxEventRepository.saveAll(events);
+        });
+        return claimed != null ? claimed : Collections.emptyList();
+    }
+
+    private void syncSingleEvent(OutboxEvent event) {
         try {
-            event.setStatus(OutboxStatus.PROCESSING);
-            outboxEventRepository.save(event);
-
             Transaction tx = objectMapper.readValue(event.getPayload(), Transaction.class);
-
-            TransactionDocument doc = TransactionDocument.builder()
-                    .id(String.valueOf(tx.getId()))
-                    .transactionCode(tx.getTransactionCode())
-                    .sourceAccountNumber(tx.getSourceAccountNumber())
-                    .targetAccountNumber(tx.getTargetAccountNumber())
-                    .amount(tx.getAmount())
-                    .status(tx.getStatus().name())
-                    .createdAt(tx.getCreatedAt())
-                    .build();
-
-            transactionSearchRepository.save(doc);
+            transactionSearchRepository.save(TransactionDocument.from(tx));
 
             event.setStatus(OutboxStatus.DONE);
             outboxEventRepository.save(event);
-            log.info("[OUTBOX JOB] Đồng bộ thành công giao dịch {}", tx.getTransactionCode());
-
         } catch (Exception e) {
-            event.setRetryCount(event.getRetryCount() + 1);
-            log.error("[OUTBOX JOB] Lỗi đồng bộ event ID {}. Lần thử thứ: {}", event.getId(), event.getRetryCount(), e);
+            int nextRetryCount = event.getRetryCount() + 1;
+            event.setRetryCount(nextRetryCount);
 
-            if (event.getRetryCount() >= 5) {
-                log.error("[OUTBOX JOB] Event ID {} vượt quá 5 lần retry. Đánh dấu FAILED_NEEDS_MANUAL_FIX", event.getId());
+            if (nextRetryCount >= MAX_RETRIES) {
                 event.setStatus(OutboxStatus.FAILED_NEEDS_MANUAL_FIX);
+                log.error("Outbox event moved to dead-letter after {} retries: eventId={}",
+                        MAX_RETRIES, event.getId(), e);
             } else {
                 event.setStatus(OutboxStatus.PENDING);
             }
+
             outboxEventRepository.save(event);
         }
     }

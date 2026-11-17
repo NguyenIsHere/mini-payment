@@ -62,7 +62,7 @@ services:
     volumes:
       - .:/apps
     working_dir: /apps
-    profiles: [ "tools" ] # Cực kỳ quan trọng: Giúp ab KHÔNG tự chạy khi bạn gõ 'docker compose up -d'
+    profiles: [ "tools" ]
 
 volumes:
   postgres_data:
