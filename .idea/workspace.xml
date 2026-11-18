@@ -4,16 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="af8a1969-5550-44bb-afc0-fa819dd413b6" name="Changes" comment="Add account controller">
-      <change afterPath="$PROJECT_DIR$/mini-payment/src/test/java/com/example/mini_payment/controller/AccountControllerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mini-payment/src/test/java/com/example/mini_payment/controller/PaymentControllerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mini-payment/src/test/java/com/example/mini_payment/service/AccountServiceTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mini-payment/src/test/java/com/example/mini_payment/service/PaymentCoreServiceTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mini-payment/src/test/java/com/example/mini_payment/service/PaymentFacadeTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/payload_reverse.json" afterDir="false" />
+    <list default="true" id="af8a1969-5550-44bb-afc0-fa819dd413b6" name="Changes" comment="test benchmark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bench-script.txt" beforeDir="false" afterPath="$PROJECT_DIR$/bench-script.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payload.json" beforeDir="false" afterPath="$PROJECT_DIR$/payload.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-payment/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/Dockerfile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,6 +18,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Dockerfile" />
       </list>
     </option>
   </component>
@@ -74,13 +69,16 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Spring Boot.MiniPaymentApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "test-metrics",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/mini-payment/mini-payment/src/test/java/com/example/mini_payment/controller",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.0",
     "settings.editor.selected.configurable": "actions.on.save",
     "vue.rearranger.settings.migration": "true"
   }
@@ -91,7 +89,7 @@
       <recent name="C:\mini-payment\mini-payment\src\test\java\com\example\mini_payment\service" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.com.example.mini_payment in mini-payment">
+  <component name="RunManager" selected="Spring Boot.MiniPaymentApplication">
     <configuration name="MiniPaymentApplicationTests" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
       <module name="mini-payment" />
       <extension name="coverage">
@@ -158,8 +156,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.com.example.mini_payment in mini-payment" />
         <item itemvalue="Spring Boot.MiniPaymentApplication" />
+        <item itemvalue="JUnit.com.example.mini_payment in mini-payment" />
         <item itemvalue="JUnit.PaymentServiceTest" />
       </list>
     </recent_temporary>
@@ -197,7 +195,23 @@
       <option name="project" value="LOCAL" />
       <updated>1794901316469</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Add unit test">
+      <option name="closed" value="true" />
+      <created>1794905576884</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1794905576884</updated>
+    </task>
+    <task id="LOCAL-00005" summary="test benchmark">
+      <option name="closed" value="true" />
+      <created>1795001100891</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1795001100891</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -218,6 +232,8 @@
     <MESSAGE value="update" />
     <MESSAGE value="Remove reconcile service" />
     <MESSAGE value="Add account controller" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add account controller" />
+    <MESSAGE value="Add unit test" />
+    <MESSAGE value="test benchmark" />
+    <option name="LAST_COMMIT_MESSAGE" value="test benchmark" />
   </component>
 </project>
