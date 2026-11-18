@@ -1,5 +1,5 @@
 {
-  "sourceAccountNumber": "ACC007",
-  "targetAccountNumber": "ACC008",
+  "sourceAccountNumber": "ACC001",
+  "targetAccountNumber": "ACC002",
   "amount": 1000.00
 }

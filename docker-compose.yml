@@ -56,6 +56,24 @@ services:
     depends_on:
       - elasticsearch
 
+  app:
+    build: ./mini-payment
+    container_name: mini_payment_app
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/mini_payment_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_DATA_REDIS_HOST: redis_cache
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+    depends_on:
+      - postgres_db
+      - redis_cache
+      - elasticsearch
+
   ab_bench:
     image: httpd:alpine
     container_name: mini_payment_ab
