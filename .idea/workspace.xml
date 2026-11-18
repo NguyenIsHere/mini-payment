@@ -4,17 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="af8a1969-5550-44bb-afc0-fa819dd413b6" name="Changes" comment="Add unit test">
-      <change afterPath="$PROJECT_DIR$/mini-payment/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="af8a1969-5550-44bb-afc0-fa819dd413b6" name="Changes" comment="test benchmark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bench-script.txt" beforeDir="false" afterPath="$PROJECT_DIR$/bench-script.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-payment/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-payment/src/main/java/com/example/mini_payment/config/RedissonConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/src/main/java/com/example/mini_payment/config/RedissonConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-payment/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payload.json" beforeDir="false" afterPath="$PROJECT_DIR$/payload.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payload_reverse.json" beforeDir="false" afterPath="$PROJECT_DIR$/payload_reverse.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-payment/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/Dockerfile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -210,7 +203,15 @@
       <option name="project" value="LOCAL" />
       <updated>1794905576884</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="test benchmark">
+      <option name="closed" value="true" />
+      <created>1795001100891</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1795001100891</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -232,6 +233,7 @@
     <MESSAGE value="Remove reconcile service" />
     <MESSAGE value="Add account controller" />
     <MESSAGE value="Add unit test" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add unit test" />
+    <MESSAGE value="test benchmark" />
+    <option name="LAST_COMMIT_MESSAGE" value="test benchmark" />
   </component>
 </project>

@@ -3,10 +3,10 @@ WORKDIR /build
 
 COPY mvnw pom.xml ./
 COPY .mvn .mvn
-RUN sed -i 's/\r$//' mvnw && chmod +x mvnw && ./mvnw dependency:go-offline -B
-
 COPY src src
-RUN ./mvnw clean package -DskipTests -B
+
+RUN --mount=type=cache,target=/root/.m2 \
+    sed -i 's/\r$//' mvnw && chmod +x mvnw && ./mvnw clean package -DskipTests -B
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
