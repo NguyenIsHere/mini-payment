@@ -20,7 +20,8 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,7 +69,7 @@ class PaymentFacadeTest {
         when(valueOperations.setIfAbsent("IDEMPOTENCY:idem-123", "PROCESSING", Duration.ofMinutes(5)))
                 .thenReturn(Boolean.TRUE);
         when(redissonClient.getLock("LOCK:ACCOUNT:ACC001")).thenReturn(redisLock);
-        when(redisLock.tryLock(3, 10, TimeUnit.SECONDS)).thenReturn(true);
+        when(redisLock.tryLock(3, TimeUnit.SECONDS)).thenReturn(true);
         when(redisLock.isHeldByCurrentThread()).thenReturn(true);
         when(paymentCoreService.transferMoneyInDB(request)).thenReturn(expectedTx);
 
@@ -97,7 +98,7 @@ class PaymentFacadeTest {
         Transaction expectedTx = Transaction.builder().transactionCode("tx-no-idem").build();
 
         when(redissonClient.getLock("LOCK:ACCOUNT:ACC001")).thenReturn(redisLock);
-        when(redisLock.tryLock(3, 10, TimeUnit.SECONDS)).thenReturn(true);
+        when(redisLock.tryLock(3, TimeUnit.SECONDS)).thenReturn(true);
         when(redisLock.isHeldByCurrentThread()).thenReturn(true);
         when(paymentCoreService.transferMoneyInDB(request)).thenReturn(expectedTx);
 
@@ -113,7 +114,7 @@ class PaymentFacadeTest {
     void processTransfer_LockTimeout_ThrowsIllegalStateException() throws InterruptedException {
         request.setIdempotencyKey(null);
         when(redissonClient.getLock("LOCK:ACCOUNT:ACC001")).thenReturn(redisLock);
-        when(redisLock.tryLock(3, 10, TimeUnit.SECONDS)).thenReturn(false);
+        when(redisLock.tryLock(3, TimeUnit.SECONDS)).thenReturn(false);
 
         assertThrows(IllegalStateException.class, () -> paymentFacade.processTransfer(request));
         verifyNoInteractions(paymentCoreService);
@@ -125,7 +126,7 @@ class PaymentFacadeTest {
     void processTransfer_CoreServiceFails_ReleasesRedisLock() throws InterruptedException {
         request.setIdempotencyKey(null);
         when(redissonClient.getLock("LOCK:ACCOUNT:ACC001")).thenReturn(redisLock);
-        when(redisLock.tryLock(3, 10, TimeUnit.SECONDS)).thenReturn(true);
+        when(redisLock.tryLock(3, TimeUnit.SECONDS)).thenReturn(true);
         when(redisLock.isHeldByCurrentThread()).thenReturn(true);
         when(paymentCoreService.transferMoneyInDB(request))
                 .thenThrow(new InsufficientBalanceException("Insufficient balance"));

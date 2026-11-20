@@ -4,10 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="af8a1969-5550-44bb-afc0-fa819dd413b6" name="Changes" comment="test benchmark">
+    <list default="true" id="af8a1969-5550-44bb-afc0-fa819dd413b6" name="Changes" comment="Adjust docker-compose">
+      <change afterPath="$PROJECT_DIR$/mini-payment/.dockerignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-payment/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-payment/src/main/java/com/example/mini_payment/repository/TransactionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/src/main/java/com/example/mini_payment/repository/TransactionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-payment/src/main/java/com/example/mini_payment/service/PaymentFacade.java" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/src/main/java/com/example/mini_payment/service/PaymentFacade.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-payment/src/test/java/com/example/mini_payment/service/PaymentFacadeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/mini-payment/src/test/java/com/example/mini_payment/service/PaymentFacadeTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,6 +29,11 @@
     <option name="myRunOnSave" value="true" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="test-metrics" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -60,6 +68,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "JUnit.PaymentFacadeTest.executor": "Run",
     "JUnit.PaymentServiceTest.executor": "Run",
     "JUnit.com.example.mini_payment in mini-payment.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -69,8 +78,11 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Spring Boot.MiniPaymentApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "test-metrics",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "junie.plugin.stays.banner.dismissed": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/mini-payment/mini-payment/src/test/java/com/example/mini_payment/controller",
     "node.js.detected.package.eslint": "true",
@@ -79,7 +91,8 @@
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "actions.on.save",
+    "settings.editor.selected.configurable": "junie.project.settings",
+    "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -235,5 +248,9 @@
     <MESSAGE value="Add unit test" />
     <MESSAGE value="test benchmark" />
     <option name="LAST_COMMIT_MESSAGE" value="test benchmark" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

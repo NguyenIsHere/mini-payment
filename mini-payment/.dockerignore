@@ -1,0 +1,28 @@
+# Maven build output (container tự biên dịch lại từ src)
+target/
+
+# IDE & OS metadata
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.DS_Store
+Thumbs.db
+
+# Git & documentation
+.git/
+.gitignore
+*.md
+
+# Logs & local secrets
+*.log
+logs/
+.env
+.env.*
+
+# Docker config files
+Dockerfile*
+docker-compose*.yml
+.dockerignore

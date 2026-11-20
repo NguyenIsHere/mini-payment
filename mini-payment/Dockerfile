@@ -1,12 +1,9 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 
-COPY mvnw pom.xml ./
-COPY .mvn .mvn
+COPY pom.xml .
 COPY src src
-
-RUN --mount=type=cache,target=/root/.m2 \
-    sed -i 's/\r$//' mvnw && chmod +x mvnw && ./mvnw clean package -DskipTests -B
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
